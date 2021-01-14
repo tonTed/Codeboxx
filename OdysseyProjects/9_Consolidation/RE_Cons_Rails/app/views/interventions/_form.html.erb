@@ -1,0 +1,44 @@
+<div class="container">
+  <%= form_for @intervention do |f| %>
+    <div class="row">
+      <div class="col-6 form-group">
+        <div class="field">
+          <%= f.label :customer_id %>
+          <%= f.collection_select :customer_id, Customer.order(:company_name), :id, :company_name,{}, {:include_blank => "Select a customer", :required => true} %>
+        </div>
+        <div class="field">
+          <%= f.label :building_id %>
+          <%= f.grouped_collection_select :building_id, Customer.order(:id), :buildings, :company_name, :id, :loc_building, {}, {:required => true} %>
+        </div>
+        <div class="field">
+          <%= f.label :battery_id %>
+          <%= f.grouped_collection_select :battery_id, Building.order(:id), :batteries, :loc_building, :id, :b_format_form %>
+        </div>
+        <div class="field">
+          <%= f.label :column_id %>
+          <%= f.grouped_collection_select :column_id, Battery.order(:id), :columns, :b_format_form, :id, :id %>
+        </div>
+        <div class="field">
+          <%= f.label :elevator_id %>
+          <%= f.grouped_collection_select :elevator_id, Column.order(:id), :elevators, :id, :id, :e_format_form %>
+        </div>
+
+      </div>
+      <div class="col-6 form-group">
+        <%= f.label :employee_id %>
+        <%= f.collection_select :employee_id, Employee.order(:first_name), :id, :full_name, :include_blank => "Select a employee" %>
+
+        <%= f.label :report %>
+        <%= f.text_area :report, :required => true %>
+
+      </div>
+    </div>
+    <div class="row">
+      <div class="actions">
+        <%= f.submit %>
+      </div>
+    </div>
+    </div>
+
+  <% end %>
+

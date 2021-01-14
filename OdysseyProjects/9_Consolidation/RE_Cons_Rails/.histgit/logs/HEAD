@@ -1,0 +1,25 @@
+0000000000000000000000000000000000000000 6a354e5db8edcbde19aa6e1125fa53173d8f01e3 tonTed <yddetco@gmail.com> 1605536345 -0500	commit (initial): lets go
+6a354e5db8edcbde19aa6e1125fa53173d8f01e3 733b84ad2f3b1dd2b52dfeff448ba15f0614b9b5 tonTed <yddetco@gmail.com> 1605538510 -0500	commit: scaffold interventions
+733b84ad2f3b1dd2b52dfeff448ba15f0614b9b5 e492a2477ac4cd609f7ab309dd17635e1b8377bc tonTed <yddetco@gmail.com> 1605711397 -0500	commit: form works
+e492a2477ac4cd609f7ab309dd17635e1b8377bc f74c1d792c93cb6a06fd5334d585aca36bb8e180 tonTed <yddetco@gmail.com> 1605720446 -0500	commit: zendesk works?
+f74c1d792c93cb6a06fd5334d585aca36bb8e180 8b0609835ab25344e744b042110f04e4ee2b3477 tonTed <yddetco@gmail.com> 1605728412 -0500	commit: deploy
+8b0609835ab25344e744b042110f04e4ee2b3477 ac8fd2049bd5aeacc39b9cc341467e1972f3daf8 tonTed <yddetco@gmail.com> 1605737589 -0500	commit: only employee acces to interventions
+ac8fd2049bd5aeacc39b9cc341467e1972f3daf8 7ecb9f681ac56eb1b6ce1ed970a72a5003ef905d tonTed <yddetco@gmail.com> 1605740373 -0500	commit: require fields ok
+7ecb9f681ac56eb1b6ce1ed970a72a5003ef905d 1e802ba043aa7d20227670bc9a6302f07b2324e0 tonTed <yddetco@gmail.com> 1605745012 -0500	commit: intervetions for employee only
+1e802ba043aa7d20227670bc9a6302f07b2324e0 67b7843c4444cc95ca75d7b04a076ba8ddca7dbb tonTed <yddetco@gmail.com> 1605800813 -0500	commit: links without author
+67b7843c4444cc95ca75d7b04a076ba8ddca7dbb 2219efb0c23664b5726aa018453f0fb3c2fa34e1 tonTed <yddetco@gmail.com> 1605801969 -0500	commit: try link author
+2219efb0c23664b5726aa018453f0fb3c2fa34e1 b479b519cd902f142443b63bf71b8b0420bf8a8e tonTed <yddetco@gmail.com> 1605830312 -0500	commit: ?
+b479b519cd902f142443b63bf71b8b0420bf8a8e 2ab8c350a7763ec48b937d219543482b918bb752 tonTed <yddetco@gmail.com> 1605837867 -0500	commit: zendesk ok, employee canbe null
+2ab8c350a7763ec48b937d219543482b918bb752 bd77ecbb17772a9ad044da508fd7678fb84e1e71 tonTed <yddetco@gmail.com> 1605839147 -0500	commit: readme
+bd77ecbb17772a9ad044da508fd7678fb84e1e71 294549887d43ca646366fc880bc622befed569a2 tonTed <yddetco@gmail.com> 1605878730 -0500	commit: link author works
+294549887d43ca646366fc880bc622befed569a2 34e94dd30738259ef4860a11f1af79fed5f8c29e tonTed <yddetco@gmail.com> 1605883312 -0500	commit: null fiels no need ok, comments
+34e94dd30738259ef4860a11f1af79fed5f8c29e 48c0a2074e40d333e728edbc513a0423876e473e tonTed <yddetco@gmail.com> 1605883740 -0500	commit: format dropdow fields
+48c0a2074e40d333e728edbc513a0423876e473e 447f0f951f11d00c1dab906fa8094add9b875cf2 tonTed <yddetco@gmail.com> 1605915275 -0500	commit: readme
+447f0f951f11d00c1dab906fa8094add9b875cf2 ce0f337c0869bbdc01524d8b28859f704fdd976a tonTed <yddetco@gmail.com> 1605915336 -0500	commit: readme
+ce0f337c0869bbdc01524d8b28859f704fdd976a b6359c830974eac1f987add8dd93c6e804a91137 tonTed <yddetco@gmail.com> 1605916415 -0500	commit: readme
+b6359c830974eac1f987add8dd93c6e804a91137 5dc496ccef46de99e05eedf8b2761a36930d8861 tonTed <yddetco@gmail.com> 1605918244 -0500	commit: fix current_user
+5dc496ccef46de99e05eedf8b2761a36930d8861 0f31e0ec0e52358d534808697f86d834ff7fd521 tonTed <yddetco@gmail.com> 1605921217 -0500	commit: readme
+0f31e0ec0e52358d534808697f86d834ff7fd521 0f31e0ec0e52358d534808697f86d834ff7fd521 tonTed <yddetco@gmail.com> 1606010586 -0500	checkout: moving from master to docker
+0f31e0ec0e52358d534808697f86d834ff7fd521 1417dbb45d03fbb32ef9ae5a5cae5e63e5699c14 tonTed <yddetco@gmail.com> 1606013960 -0500	commit: works in container
+1417dbb45d03fbb32ef9ae5a5cae5e63e5699c14 eb735c40fcdad241d66b6b868757079559c22262 tonTed <yddetco@gmail.com> 1606088000 -0500	commit: last try
+eb735c40fcdad241d66b6b868757079559c22262 0f31e0ec0e52358d534808697f86d834ff7fd521 tonTed <yddetco@gmail.com> 1606140504 -0500	checkout: moving from docker to master
