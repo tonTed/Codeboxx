@@ -1,0 +1,129 @@
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											TO DO LIST
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+REQUIREMENTS:
+[] - SEQUENCE isCloser : do the algorithm
+
+FORWARD:
+[] - SEQUENCE isCloser : case or more elevator are at the same floor
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											DEFINE CLASS
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+EXEMPLE INIT coontroller1 TO INSTANTIATE of Column WITH floors AND elevatorQuantity
+
+
+DEFINE Controller USING 
+ENDDEFINE
+
+DEFINE Column USING floors				'floors is the number of floors on the column'
+	SEQUENCE --- INITILIZATION ---											'initialization of variable and objects'
+		INIT status				: TRUE		'TRUE = online OR FALSE = offline'
+		INIT floors				: floors	'integer of numbers of floors'
+		INIT elevators			: []		'list of elevators in Column'
+		INIT callFloorButtons	: []		'list of call buttons on floors'
+
+		CALL createCallFloorButtons
+
+		SEQUENCE createCallFloorButtons 	'Function for create as many button as floor'
+			INIT ITERATOR BY 1
+			FOR EACH floor					'Considering i starting at 1'
+				callFloorButtons.APPEND({floorOfButton: floor, pressed : FALSE})
+			ENDFOR
+		ENDSEQUENCE
+
+		SEQUENCE create
+
+		ENDSEQUENCE
+	ENDSEQUENCE
+
+	DEFINE choiceElevator USING button.callButton RETURN elevator			'function for choose the best elevator'
+		SET elevators = []																		'set a empty list of elevators'
+		FOR EACH elevator IN self.elevators
+			IF elevator.moving = FALSE THEN
+				elevators.APPEND(elevator)														'add elevator not moving a the list of elevators'
+			ENDIF
+			IF elevators.LENGHT == 1 THEN
+				RETURN elevators[0]
+			ELSE
+				RETURN CALL isCloser WITH elevators AND button.callButton RETURNING elevator
+			ENDIF
+		ENDFOR
+	ENDDEFINE
+ENDDEFINE
+
+DEFINE Elevator USING column			'column is a object that's manage it's
+	SEQUENCE --- INITILIZATION ---											'initialization of variable and objects'
+		INIT moving				: FALSE		'FALSE = idle OR TRUE = moving'
+		INIT callElevatorButtons: []		'list of call buttons floor in elevator'
+		INIT currentFloor		: 1			'integer of the current floor'
+
+		CALL createCallElevatorButtons
+		CALL addToColumn
+
+		SEQUENCE createFloorButtons 		'Function for create as many button as floor'
+			FOR i IN floors					'Considering i starting at 1'
+				callElevatorButtons.APPEND({"callButton" + "i" : i})
+			ENDFOR
+		ENDSEQUENCE
+			
+		SEQUENCE addToColumn
+			column.elevators.APPEND(this)
+		ENDSEQUENCE
+	ENDSEQUENCE
+
+	SEQUENCE openDoor
+		ACTION() >> Open Door
+		ACTION() >> Wait 8 seconds
+		CALL closeDoor()
+	ENDSEQUENCE
+
+	SEQUENCE closeDoor
+		WHILE self.doorPath is blocked DO
+			ACTION() >> Wait 3 seconds
+		ENDWHILE
+		ACTION() >> Close Door
+	ENDSEQUENCE
+
+ENDDEFINE
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											DEFINE FUNCTIONS
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DEFINE isCloser USING elevators AND floorRequest RETURN elevator
+	'algorithm to get elevator closer to floorRequest'
+		"algorithm LOADING..."
+		RETURN elevator
+ENDDEFINE
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											PROGRAM
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+WHILE Column
+	FOR EACH button IN column.callFloorButtons 
+		IF button.pressed = TRUE THEN
+			CALL column.choiceElevator WITH button.callButton RETURNING elevator				'button.callButon is the floor of the button pressed'
+			SET button.pressed = FALSE
+			SET elevator.moving = TRUE
+			IF elevator.currentFloor != button.callButton THEN
+				ACTION() >> elevator move to button.callButton
+			ENDIF
+			elevator.openDoor()
+			SET Elevator.moving = FALSE
+		ENDIF
+	ENDFOR
+	FOR EACH button IN elevator.callElevatorButtons
+		IF button.pressed = TRUE THEN
+			SET button.pressed = FALSE
+			SET elevator.moving = TRUE
+			'// elevator.closeDoor()		"<= ? append IF door is open THEN close ELSE ACTION ?"'
+			ACTION() >> elevator move to button.callButton
+			elevator.openDoor()
+			SET elevator.moving = FALSE
+		ENDIF
+	ENDFOR
+ENDWHILE

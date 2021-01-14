@@ -1,0 +1,325 @@
+------------------------------------------------------------ TO DO LIST ------------------------------------------------------------------
+
+	REQUIREMENTS:
+	'[OK] - SEQUENCE createCallFloorButtons : "do the algorithm"
+	'[OK] - Elevator.status : "changes value to idle, up, down"
+	'[OK] - create a queu of request / elevator
+	'[OK] - manage display floor
+	'[OK] - change self by column or batterie
+
+	REQUIREMENTS EXTRA:
+	'[OK] - SEQUENCE isCloser : "do the algorithm"
+	[] - SEQUENCE therAreNotOnWay : "very bad function for the last case"
+
+	FORWARD:
+	[] - SET elevator.status ?
+	[] - SEQUENCE isCloser : "case or more elevator are at the same floor take the "
+	[] - SEQUENCE isCloser : "manage the diff between basemens and floors up"
+
+---------------------------------------------------------- END TO DO LIST ----------------------------------------------------------------
+
+
+------------------------------------------------------------ CHANGE SYNTAX ---------------------------------------------------------------
+
+	column.choiceElevator		= choiceElevator OF column						[] or "= []"	= EMPTY list "= []"
+	column.callFloorButtonsRC	= callFloorButtonsRC OF column					=				= IS EQUAL
+	column.floorServed			= floorServed OF column							!=				= IS NOT EQUAL
+	column.elevators			= elevators OF column							>				= IS GREATER THAN
+																				<				= IS SMALLER THAN
+	batterie.columns			= columns OF batterie							[0]				= first element on the list
+	batterie.callFloorButtons	= callFloorButtons OF batterie
+	self.columns				= columns OF batterie
+
+	elevator.currentFloor		= currentFloor OF elevator
+	elevator.status				= status OF elevator
+	elevator.listRequest		= listRequest OF elevator
+
+	listOfElevators.lenght		= lenght OF listOfElevators
+---------------------------------------------------------- END CHANGE SYNTAX -------------------------------------------------------------
+
+
+------------------------------------------------------------ DEFINE CLASS ----------------------------------------------------------------
+
+	EXEMPLE INIT controller1 TO INSTANTIATE OF Batterie WITH (66, 6,( (range(-6,-1), 4), (range(2, 20), 4), (range(21, 40), 4)), (range(41, 60), 4))
+	
+	'floors is a integer of floors manage by the batterie
+	'basement is a integer of basement mange by the batterie
+	'listOfColumn : contents a list per column manage by batterie with a list for floor that serve and the number of elevator
+	'[(list of floors served), elevator quantity]'
+
+	DEFINE Controller USING floors AND basements AND listOfcColumn
+
+		CALL createBatterie WITH floors AND basements AND listOfcColumn
+		CALL PROGRAM
+		
+		SEQUENCE createBatterie USING floors AND basements AND listOfcColumn
+			INIT batterie TO INSTANTIATE OF Batterie WITH floors AND basements
+			INIT ITERATOR_I BY 1
+			FOR EACH column IN listOfcColumn
+				INIT newColumn TO INSTANTIATE OF Column WITH listOfcColumn[0] AND ITERATOR_I
+				INIT ITERATOR_J BY 1
+				FOR EACH elevator IN RANGE(listOfcColumn[1])
+					INIT newElevator TO INSTANTIATE OF Elevator WITH ITERATOR_J
+					ADD newElevator TO elevators
+					INCREMENT ITERATOR_J BY 1
+				ENDFOR
+				INCREMENT ITERATOR_I BY 1
+			ENDFOR
+		ENDSEQUENCE
+
+		'[OK]function to set the direction on relation to the request is on basements or up floors
+		SEQUENCE setDirection USING floor AND placOfRequest RETURN direction			'(call by PROGRAM)'
+			IF (floor < 0 AND placOfRequest = "panel") OR (floor > 0 AND placOfRequest = "floorWhereRequest") THEN
+				RETURN "goDown"
+			ELSE
+				RETURN "goUp"
+			ENDIF
+		ENDSEQUENCE
+
+		SEQUENCE PROGRAM
+			WHILE batterie
+				'section thats manage the request buttons of the batterie and post request to the best elevator'
+					'floorRequestButton.floorOfButton is the floor requested'
+					FOR EACH floorRequestButton IN batterie.callFloorButtons
+						IF floorRequestButton.pressed = TRUE THEN					
+							INIT floor = floorRequestButton.floorOfButton
+							'choose column'
+							CALL choiceColumn WITH floor RETURNING column
+							'set direction'
+							CALL setDirection WITH floor AND "panel" RETURNING direction
+							'choose elevator'
+							CALL column.choiceElevator WITH floor AND direction RETURNING elevator
+							'add to listRequest of elevator'
+							elevator.listRequest.APPEND(floor)
+							'change status of button to FALSE'
+							SET floorRequestButton.pressed = FALSE
+						ENDIF
+					ENDFOR
+				'section thats manage the request buttons of the floors and post request to the best elevator'
+					'floorRequestButton.floorOfButton is the floor requested'
+					FOR EACH column IN batterie.columns
+						FOR EACH floorRequestButton IN column.callFloorButtonsRC
+							INIT floor = floorRequestButton.floorOfButton
+							IF floorRequestButton.pressed = TRUE THEN
+								'choose column'
+								CALL choiceColumn WITH floor RETURNING column
+								'set direction'
+								CALL setDirection WITH floor AND "floorWhereRequest" RETURNING direction
+								'choose elevator'
+								CALL column.choiceElevator WITH floor AND direction RETURNING elevator
+								'add to listRequest of elevator'
+								elevator.listRequest.APPEND(floor)
+								'change status of button to FALSE'
+								SET floorRequestButton.pressed = FALSE
+							ENDIF
+						ENDFOR
+					ENDFOR
+				'section thats action the request list of each elevators'
+					FOR EACH elevator IN column.elevators
+						WHILE elevator.listRequest
+							CALL doRequest WITH elevator
+						ENDWHILE
+						elevator.status = "idle"		
+					ENDFOR
+			ENDWHILE
+		ENDSEQUENCE
+	ENDDEFINE
+
+	DEFINE Batterie USING floors AND basements
+		SEQUENCE --- INITILIZATION ---
+			INIT status				: TRUE					'TRUE = online OR FALSE = offline'
+			INIT floors				: floors				'integer of numbers of floors including basements'
+			INIT basements			: basements 			'integer of numbers of basements'
+			INIT callFloorButtons	: []					'list of call buttons on floors'
+			INIT columns			: []					'list of columns in Batterie'
+
+			CALL createCallFloorButtons
+
+			'function for create as many button as floor served' 
+			SEQUENCE createCallFloorButtons
+					FOR ITERATOR IN floors	
+						INIT floor = ITERATOR - basement
+						'section for set a name a each floor and add the button'
+							IF floor < 0 THEN
+								callFloorButtons.APPEND({floorOfButton : floor, pressed : FALSE, nameButton: "B" + abs(floor)})
+							ELSE IF floor > 1 THEN
+								callFloorButtons.APPEND({floorOfButton : floor, pressed : FALSE, nameButton: floor)})
+							ENDIF
+					ENDFOR
+			ENDSEQUENCE
+		ENDSEQUENCE
+
+		METHODS
+			'[OK] function that return the column serve floor request 				(call PROGRAM)
+			SEQUENCE choiceColumn USING floorRequest
+				FOR EACH column IN batterie.columns
+					'iterates on array floor served for check if one value match with the floor called'
+					IF floorRequest IN column.floorsServed THEN
+						RETURN column
+					ENDIF
+				ENDFOR
+				"RETURN ERROR"
+			ENDSEQUENCE
+		ENDMETHODE
+	ENDDEFINE
+
+	DEFINE Column USING floorsServed AND id			'floorsServed is a list with floors served without floor RC (1)'
+		SEQUENCE --- INITILIZATION ---						'initialization of variable and objects'
+			INIT ID 				: id
+			INIT floorsServed		: floorsServed 			'list of floors served'
+			INIT callFloorButtonsRC	: []					'list of call buttons on floors'
+			INIT elevators			: []					'list of elevators in Column'
+			INIT displaysFloorsOFColums	: []					'list of object display by elevator and floor served'
+
+			CALL createrCallFloorButtonsToRC
+
+			'function for create as many buttons as floor served'
+			SEQUENCE createrCallFloorButtonsToRC
+				FOR EACH floorServed IN column.floorsServed
+					callFloorButtonsRC.APPEND({floorOfButton: floorServed, pressed : FALSE})
+				ENDFOR
+			ENDSEQUENCE
+
+			SET floorServed.APPEND(1)						'append the first floor RC'
+		ENDSEQUENCE
+
+		METHODS
+			'[OK] function that return the closer elevator to the floorRequest 		(call by elevatorReturn)
+			SEQUENCE isCloser USING listOfElevators AND floorRequest RETURN elevator
+				INIT newListOfElevators = []
+				'iterate of a list of elevators previously selected and add at a new list 
+				'with the difference between the current floor of the elevator and the floor requested'
+				FOR EACH elevator IN listOfElevators
+					newListOfElevators.APPEND({elevator: elevator, diff: ABS(floorRequest - elevator.currentFloor)})
+				ENDFOR
+				'sort the list by the list and select the first elevator then the closer'
+				newListOfElevators.SORT() BY diff
+				RETURN newListOfElevators[0]
+			ENDSEQUENCE
+			
+			'[OK]function that return the best elevator 							(call by theyAreIdle AND theyAreOnWay)
+			SEQUENCE elevatorReturn USING listOfElevators AND floorRequest RETURN elevator OR FALSE
+				IF listOfElevators.lenght = 0 THEN
+					RETURN FALSE
+				ELSE IF listOfElevators.lenght = 1 THEN
+					RETURN listOfElevators[0]
+				ELSE 
+					RETURN CALL isCloser WITH listOfElevators AND floorRequest RETURNING elevator
+				ENDIF
+			ENDSEQUENCE
+			
+			'[OK]function that return the best elevator on same way					(call by choiceElevator)
+			SEQUENCE therAreOnWay USING floorRequest AND direction
+				INIT listOfElevators = []
+				FOR EACH elevator IN column.elevators
+					'implement a list of elevator on same way (direction and did not go beyond the floorRequest)'
+					IF elevator.status = direction THEN
+						IF (direction = "goUp" AND elevator.currentFloor < floorRequest) OR (direction = "goDown" AND elevator.currentFloor > floorRequest) THEN
+							listOfElevators.APPEND(elevator)
+						ENDIF
+					ENDIF
+				ENDFOR
+				RETURN CALL elevatorReturn WITH listOfElevators AND floorRequest RETURNING elevator OR FALSE
+			ENDSEQUENCE
+
+			'[OK]function that return the best elevator idle 						(call by choiceElevator)'
+			SEQUENCE theyAreIdle USING column AND floorRequest RETURN elevator
+				INIT listOfElevators = []
+				FOR EACH elevator IN column.elevators
+				'implement a list of elevator idle'
+					IF elevator.status = "idle" THEN
+						listOfElevators.APPEND(elevator)
+					ENDIF
+				RETURN CALL elevatorReturn WITH listOfElevators AND floorRequest
+			ENDSEQUENCE
+
+			'[OK]function that return the best elevator on opposite way				(call by choiceElevator)
+			SEQUENCE therAreNotOnWay USING floorRequest AND direction
+				INIT listOfElevators = []
+				FOR EACH elevator IN column.elevators
+				'implement a list of elevator on opposite way (direction and did not go beyond the floorRequest)'
+					IF elevator.status != direction THEN 'AND elevator.status != "idle" 
+						listOfElevators.APPEND(elevator)
+					ENDIF
+				ENDFOR
+				RETURN CALL elevatorReturn WITH listOfElevators AND floorRequest RETURNING elevator OR FALSE
+			ENDSEQUENCE
+
+			'[OK]main function for choose the best elevator' (call by PROGRAM)
+			SEQUENCE choiceElevator USING floorRequest AND direction RETURN elevator
+				CALL therAreOnWay WITH floorRequest AND direction RETURNING elevator or FALSE
+				IF elevator THEN
+					RETURN elevator
+				ENDIF
+				CALL theyAreIdle WITH floorRequest AND direction RETURNING elevator or FALSE
+				IF elevator THEN
+					RETURN elevator
+				ENDIF
+				RETURN CALL therAreNotOnWay WITH floorRequest AND direction RETURNING elevator
+			ENDSEQUENCE
+
+			'[OK] function for create display on floors of column by
+			SEQUENCE createDisplaysFloors USING floorServed AND elevator
+				'create a object display above each door of each elavator of each column was is serve'
+				'display_ is the screen'
+				FOR EACH column IN batterie.columns
+					FOR EACH elevator IN column
+						FOR EACH floorServed
+							displaysFloors.APPEND({elevator: elevator, floor: floor, display_: elevator.currentFloor})
+						ENDFOR
+					ENDFOR
+				ENDFOR
+			ENDSEQUENCE
+		ENDMETHODS
+	ENDDEFINE
+
+	DEFINE Elevator USING id						'column is a object that's manage it's
+		SEQUENCE --- INITILIZATION ---						'initialization of variable and objects'
+			INIT ID = id
+			INIT status				: "idle"					'idle AND goUp AND goDown'
+			INIT currentFloor		: 1							'integer of the current floor'
+			INIT listRequest		: []						'list of request'
+		ENDSEQUENCE
+
+		METHODS
+			'[OK] function for open the door'										(call by doRequest)
+			SEQUENCE openDoor
+				ACTION() >> Open Door
+				ACTION() >> Wait 8 seconds
+				CALL closeDoor()
+			ENDSEQUENCE
+
+			'[OK] function for close the door'										(call by openDoor)
+			SEQUENCE closeDoor
+				WHILE elevator.doorPath is blocked DO
+					ACTION() >> Wait 3 seconds
+				ENDWHILE
+				ACTION() >> Close Door
+			ENDSEQUENCE
+
+			'[OK] function for to move the elevtor'									(call by PROGRAM)
+			SEQUENCE doRequest USING elevator
+				FOR EACH request IN elevator
+					'if the elevator is on the floor request then open else move to the floor requested'
+					IF elevator.currentFloor != floor THEN
+						ACTION() >> elevator move to floor
+					ENDIF
+					elevator.openDoor()
+					'remove the request on the list'
+					elevator.listRequest[0].REMOVE()
+				ENDFOR
+			ENDSEQUENCE
+		ENDMETHODS
+	ENDDEFINE
+
+---------------------------------------------------------- ENDDEFINE CLASS ---------------------------------------------------------------
+
+============================================================ TESTING SECTION =============================================================
+
+INIT controller1 TO INSTANTIATE OF Batterie WITH (66, 6,( (range(-6,-1), 4), (range(2, 20), 4), (range(21, 40), 4)), (range(41, 60), 4))
+
+========================================================== END TESTING SECTION ===========================================================
+
+-------------------------------------------------------------- ALGO LOADING --------------------------------------------------------------
+
+------------------------------------------------------------ END ALGO LOADING ------------------------------------------------------------

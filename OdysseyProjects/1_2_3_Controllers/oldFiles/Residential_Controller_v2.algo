@@ -1,0 +1,130 @@
+
+additional considerations :
+	- doors floors
+	- change of floors
+
+********************************************************************************************************************************************************************************************************
+										DEFINE CLASS
+********************************************************************************************************************************************************************************************************
+
+Column:
+	status : TRUE					// FALSE = offline or TRUE = online
+	floors : 						// integer of the number of floors
+??	callButton: 					// ???? creation buttons !!!!
+	callButtonUp: FALSE				// FALSE = not pressed or TRUE = pressed
+	actionQueu: []					// list pending actions
+	elevators: []					// list of elevators
+
+Elevator:
+	currentFloor: 1					// integer according to number of floors
+	currentMovement: stationary		// stationary, goUp, goDown
+	actionQueu:[]					// list pending actions
+	doorOpen: FALSE					// FALSE or TRUE
+	doorClose: TRUE					// FALSE or TRUE
+
+
+********************************************************************************************************************************************************************************************************
+										DEFINE FUNCTIONS
+********************************************************************************************************************************************************************************************************
+
+SEQUENCE closeDoor
+	WHILE door path is blocked DO
+		wait 3 seconds
+	ENDWHILE
+	SET doorOpen TO FALSE
+	close door
+	SET doorClose TO TRUE
+ENDSEQUENCE
+
+SEQUENCE openDoor
+	SET currentMovement TO stationary		
+	SET doorClose TO FALSE
+	open door
+	SET doorOpen TO TRUE
+	wait 8 seconds
+	CALL closeDoor
+ENDSEQUENCE
+
+SEQUENCE moveElevator USING buttonFloor AND elevator																!!! CHANGE elevator.currentFloor during the movement
+	IF buttonFloor > elevatorFloor THEN
+		go down 																											// FORWARD > queu 
+		SET elevator.currentMovement to goDown
+	ELSE 
+		go up																												// FORWARD > queu 
+		SET elevator.currentMovement TO goUp
+	ENDIF
+	stop on buttonFloor
+	SET currentFloor TO buttonFloor																							// FORWARD set by column with sensor
+	CALL openDoor
+ENDSEQUENCE
+
+SEQUENCE onWay USING elevator AND requestFloor RETURN BOOL
+	IF elevator.currentMovement = goUp AND elevator.currentFloor < requestFloor THEN
+		RETURN TRUE
+	ELSE IF elevator.currentMovement = goDown AND elevator.currentFloor > requestFloor THEN
+		RETURN TRUE
+	ELSE
+		RETURN FALSE
+	ENDIF
+ENDSEQUENCE
+
+SEQUENCE checkElevators USING direction AND requestFloor RETURN elevator
+	//Adds > check if elevator is online or offline
+	FOR EACH elevator IN column.elevators
+		IF elevator.currentMovement = stationary THEN																		// FORWARD : choose the closer stationary
+			RETURN elevator
+		ENDIF
+	ENDFOR
+	FOR EACH elevator IN column.elevators
+		IF elevator.currentMovement = direction AND CALL onWay WITH elevator AND requestFloor RETURNING BOOL THEN			// FORWARD : choose the closer in same direction
+			RETURN elevator
+		ENDIF
+	ENDFOR
+??	RETURN elevator where the end of cycle is closer																		>>>
+		
+ENDSEQUENCE
+
+SEQUENCE appendRequest USING elevator AND request
+
+ENDSEQUENCE
+
+********************************************************************************************************************************************************************************************************
+										PROGRAM
+********************************************************************************************************************************************************************************************************
+
+
+WHILE column
+	IF callButtonUP is PRESSED THEN
+		CALL checkElevators WITH direction = goUp AND callButtonUpFloor RETURNING elevator
+		SET elevator = elevator 
+		IF elevator.currentFloor = callButtonUpFloor THEN																		/-- REFACTORING #1
+			CALL openDoor
+		ELSE IF elevator.currentMovement = stationary THEN
+			CALL moveElevator WITH callButtonUpFloor AND elevator
+		ENDIF																												REFACTORING #1--/
+	ENDIF
+
+	IF elevatorFloorButton is PRESSED THEN
+		IF doorClose = FALSE THEN
+			CALL closeDoor
+		ENDIF
+		IF elevatorFloor = elevatorFloorButton THEN																			/-- REFACTORING #1
+			CALL openDoor
+		ELSE
+			CALL moveElevator WITH elevatorFloorButton AND elevatorFloor
+		ENDIF																												REFACTORING #1--/
+	ENDIF
+
+	IF elevatorCloseButton is PRESSED AND doorClose = FALSE THEN
+		CALL closeDoor
+	ENDIF
+
+	IF elevatorOpenButton is PRESSED AND doorOpen = FALSE THEN
+		IF doorClose = FALSE
+			CALL openDoor
+		ELSE IF doorClose = TRUE AND currentMovement = stationary
+			CALL openDoor
+		ENDIF
+	ENDIF
+ENDWHILE
+

@@ -1,0 +1,212 @@
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											TO DO LIST
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SEQUENCE isCloser > algorithm get number closer in a list
+
+elevator.actionQueu > list of action with {
+	action: move to, direction: 
+}
+
+REFACTORING:
+	- [do] theyAreOnWay / theyAreIdle
+
+BAD SYNTAX:
+	- getNewActions
+
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											DEFINE CLASS
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+DEFINE Elevator WITH column:
+	INIT column : column														// name of column that manage its
+	INIT status : TRUE															// FALSE = offline or TRUE = online
+	INIT floor : 1																// integer of the number of floors
+	INIT movement : "idle"														// "idle", "goUp", "goDown"
+	INIT moving : FALSE															// FALSE or TRUE
+	INIT doorOpen : FALSE														// FALSE or TRUE
+	INIT doorClose : TRUE														// FALSE or TRUE
+	INIT actionQueu : []														// list of integer for floor to be served (sorted if "goUp" or sorted.reverse if goDown)
+	INIT buttonFloors : {floor n : n}											// list of objects buttons {1 to n}
+	INIT buttonOpen : 															// PRESSED or NOT   
+	INIT buttonClose :															// PRESSED or NOT	
+
+	SEQUENCE openDoor 															(call by PROGRAM elevator)
+		SET self.doorClose TO FALSE
+		> open door <
+		SET self.doorOpen TO TRUE
+		> wait 8 seconds <
+		CALL self.closeDoor
+	ENDSEQUENCE
+
+	SEQUENCE closeDoor 															(call by openDoor)
+		WHILE self.door path is blocked DO
+			> wait 3 seconds <
+		ENDWHILE
+		SET self.doorOpen TO FALSE
+		> close door <
+		SET self.doorClose TO TRUE
+	ENDSEQUENCE
+
+	SEQUENCE addToQueu USING button.floor
+		IF self.actionQueu is empty THEN
+			self.actionQueu.APPEND()
+		ELSE IF self.movement = "goUp" AND self.floor < button.floor THEN
+			self.actionQueu.APPEND()
+		ELSE IF self.movement = "goDown" AND self.floor > button.floor THEN
+			self.actionQueu.APPEND()
+		ELSE
+			
+	ENDSEQUENCE
+
+ENDDEFINE
+
+DEFINE Column WITH floors:
+	INIT status : TRUE															// FALSE = offline or TRUE = online
+	INIT floors : n																// integer of the number of floors
+	INIT elevators : []															// list of elevators its manages
+	INIT callButtonUp : ({floor: n})											// list of buttons object {1 to n - 1}
+	INIT callButtonDown : ({floor: n})											// list of buttons object {n + 1 to n}
+	INIT actionQueu: [{direction:... , floorRequest:}]							// list of object with direction and floor request
+ENDDEFINE
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											DEFINE FUNCTIONS
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+SEQUENCE isCloser USING listOfElevators AND floor 								(call by elevatorReturn)
+	"??	algorithm get number closer in a list"	
+	RETURN listOfElevators
+ENDSEQUENCE
+
+SEQUENCE elevatorReturn USING listOfElevators AND floor RETURN elevator 		(call by theyAreIdle AND theyAreOnWay)
+		IF listOfElevators.lenght = 0 THEN
+		RETURN FALSE
+	ELSE IF listOfElevators.lenght = 1 THEN
+		RETURN listOfElevators[0]
+	ELSE 
+		RETURN CALL isCloser USING listOfElevators AND floor 
+	ENDIF
+ENDSEQUENCE
+
+SEQUENCE theyAreIdle USING column AND floor RETURN elevator 					(call by choiceElevator)
+	INIT listOfElevators = []
+	FOR EACH elevator IN column.elevators
+		IF elevator.status AND elevator.movement = idle THEN
+			listOfElevators.append(elevator)
+		ENDIF
+	RETURN CALL elevatorReturn WITH listOfElevators AND floor
+ENDSEQUENCE
+
+SEQUENCE theyAreOnWay USING column AND floor AND direction RETURN elevator 		(call by choiceElevator)
+	INIT listOfElevators = []
+	FOR EACH elevator IN column.elevators
+		IF elevator.status AND elevator.movement = direction AND elevator.floor < floor THEN
+			IF (direction = "goUp" AND elevator.floor < floor) OR (direction = "goDown" AND elevator.floor > floor) THEN
+				listOfElevators.append(elevator)
+			ENDIF
+		ENDIF
+	RETURN CALL elevatorReturn WITH listOfElevators AND floor
+ENDSEQUENCE
+
+SEQUENCE choiceElevator USING column AND floor AND direction 					(call by PROGRAM column)
+	SET elevator = CALL theyAreIdle WITH column AND floor RETURNING elevator
+	IF elevator THEN
+	>	elevator.actionQueu.append(floor) >>>
+		BREAK
+	ENDIF
+
+	SET elevator = CALL theyAreOnWay WITH column AND floor AND direction RETURNING elevator
+	IF elevator THEN
+	>	elevator.actionQueu.append(floor) >>>
+		BREAK
+	ENDIF
+
+	> column.actionQueu.append(direction: directtion, floor = floor
+ENDSEQUENCE
+
+SEQUENCE getNewActions USING column												(call by PROGRAM elevator)
+	IF column.actionQueu is not empty THEN
+		SET elevator.direction = column.actionQueu[0].direction
+		elevator.actionQueu.APPEND(column.actionQueu[0].floor)
+		column.actionQueu[0].POP()
+		FOR EACH action in column.actionQueu
+			IF action.direction = elevator.direction THEN
+				elevator.actionQueu.APPEND(action.floor)
+				column.actionQueu.action.POP()							  		<! bad syntax
+			ENDIF
+		ENDFOR
+	ENDIF
+ENDSEQUENCE
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+											PROGRAM
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+WHILE column
+	FOR EACH button IN callButtonUp
+		IF button is PRESSED THEN
+			CALL choiceElevator WITH column AND button.floor AND "goUp"
+		ENDIF
+	FOR EACH button IN callButtonDown
+		IF button is PRESSED THEN
+			CALL choiceElevator WITH column AND button.floor AND "goDown"
+		ENDIF
+ENDWHILE
+
+WHILE elevator
+	IF elevator.movement = "idle"
+		CALL getNewActions WITH column
+	ENDIF
+
+	IF elevator.movement = "goUp"
+		WHILE elevator.actionQueu is not empty
+			elevator.actionQueu.SORT(ascending)
+			IF elevator.actionQueu[0] = elevator.floor
+				CALL elevator.openDoor
+			ELSE 
+				SET elevator.moving TRUE
+				move to elevator.actionQueu[0]
+				SET elevator.moving FALSE
+				CALL elevator.openDoor
+				elevator.actionQueu[0].POP()
+			ENDIF
+		ENDWHILE
+		SET elevator.movement = "idle"
+	ENDIF
+			
+	IF elevator.movement = "goDown"
+		WHILE elevator.actionQueu is not empty
+			elevator.actionQueu.SORT(descending)
+			IF elevator.actionQueu[0] = elevator.floor
+				CALL elevator.openDoor
+			ELSE 
+				SET elevator.moving TRUE
+				move to elevator.actionQueu[0]
+				SET elevator.moving FALSE
+				CALL elevator.openDoor
+				elevator.actionQueu[0].POP()
+			ENDIF
+		ENDWHILE
+		SET elevator.movement = "idle"
+	ENDIF
+
+	FOR EACH button IN elevator.buttonFloors
+		IF button is PRESSED THEN
+			CALL elevator.addToQueu WITH button.floor
+	
+	IF elevator.buttonOpen is PRESSED THEN
+		CALL elevator.openDoor
+	ENDIF
+
+	IF elevator.buttonClose is PRESSED THEN
+		CALL elevator.closeDoor
+	ENDIF
+
+ENDWHILE
+
+
+
+

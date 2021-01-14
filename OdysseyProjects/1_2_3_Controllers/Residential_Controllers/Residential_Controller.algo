@@ -1,0 +1,281 @@
+
+'we consider that the indexes start at 1'
+
+------------------------------------------------------------ DEFINE CLASS ----------------------------------------------------------------
+
+	DEFINE Controller USING floors AND elevatorQuantity
+
+		CALL createColumn WITH floors AND elevatorQuantity
+		CALL PROGRAM
+		
+		SEQUENCE createColumn USING floors AND elevatorQuantity
+			INIT column TO INSTANTIATE OF Column WITH floors qadasdas
+				INIT ITERATOR 1
+				FOR EACH elevator IN RANGE(elevatorQuantity)
+					INIT newElevator TO INSTANTIATE OF Elevator WITH ITERATOR AND floors
+					ADD newElevator TO elevators
+					INCREMENT ITERATOR 1
+				ENDFOR
+			ENDFOR
+		ENDSEQUENCE
+
+		SEQUENCE PROGRAM
+			WHILE column
+				'section thats manage the request buttons of the floors in column and post request to the best elevator'
+					'floorRequestButton.floorOfButton is the floor requested'
+					FOR EACH floorRequestButton IN column.callFloorButtonsUp
+						IF floorRequestButton.pressed = TRUE THEN					
+							INIT floor = floorRequestButton.floorOfButton
+							'choose elevator'
+							CALL column.choiceElevator WITH floor AND "goUp" RETURNING elevator
+							'add to listRequest of elevator'
+							elevator.listRequest.APPEND(floor)
+							'change status of button to FALSE'
+							SET floorRequestButton.pressed = FALSE
+						ENDIF
+					ENDFOR
+					FOR EACH floorRequestButton IN column.callFloorButtonsDown
+						IF floorRequestButton.pressed = TRUE THEN					
+							INIT floor = floorRequestButton.floorOfButton
+							'choose elevator'
+							CALL column.choiceElevator WITH floor AND "goDown" RETURNING elevator
+							'add to listRequest of elevator'
+							elevator.listRequest.APPEND(floor)
+							'change status of button to FALSE'
+							SET floorRequestButton.pressed = FALSE
+						ENDIF
+					ENDFOR
+
+				'section thats manage the request buttons inside elevator and post request to the best elevator'
+					'floorRequestButton.floorOfButton is the floor requested'
+					FOR EACH elevator IN column.elevators
+						FOR EACH floorRequestButton IN elevator.callElevatorButtons
+							IF floorRequestButton.pressed = TRUE THEN
+								INIT floor = floorRequestButton.floorOfButton
+								elevator.listRequest.APPEND(floor)
+								'change status of button to FALSE'
+								SET floorRequestButton.pressed = FALSE
+							ENDIF
+						ENDFOR
+					ENDFOR
+
+				'section thats action the request list of each elevators'
+					FOR EACH elevator IN column.elevators
+						WHILE elevator.listRequest
+							CALL doRequest WITH elevator
+						ENDWHILE
+						elevator.status = "idle"		
+					ENDFOR
+			ENDWHILE
+		ENDSEQUENCE
+	ENDDEFINE
+
+	DEFINE Column USING floors						'floors is a integer with floors'
+		SEQUENCE --- INITILIZATION ---							'initialization of variable and objects'
+			INIT floors					: floors 				'list of floors served'
+			INIT callFloorButtonsUp		: []					'list of call buttons Up on floors'
+			INIT callFloorButtonsDown	: []					'list of call buttons Down on floors'
+			INIT elevators				: []					'list of elevators in Column'
+
+			CALL createrCallFloorButtons
+
+			'[OK]function for create as many buttons as floor served'
+			SEQUENCE createrCallFloorButtons
+				FOR EACH floor IN range(1, floors)
+					'create button up and down on each floor excep first only Up and excep last floor only Down'
+					IF floor = 1 THEN
+						callFloorButtonsUp.APPEND({floorOfButton: floorServed, pressed : FALSE})
+						'create a object invisible for keep de iteration floor and position on lis'
+						callFloorButtonsDown.APPEND("hide")
+					IF floor = floors THEN
+						callFloorButtonsDown.APPEND({floorOfButton: floorServed, pressed : FALSE})
+					ELSE
+						callFloorButtonsUp.APPEND({floorOfButton: floorServed, pressed : FALSE})
+						callFloorButtonsDown.APPEND({floorOfButton: floorServed, pressed : FALSE})
+					ENDIF
+				ENDFOR
+			ENDSEQUENCE
+
+		ENDSEQUENCE
+
+		METHODS
+			'[OK] function that return the closer elevator to the floorRequest 		(call by elevatorReturn)
+			SEQUENCE isCloser USING listOfElevators AND floorRequest RETURN elevator
+				INIT newListOfElevators = []
+				'iterate of a list of elevators previously selected and add at a new list 
+				'with the difference between the current floor of the elevator and the floor requested'
+				FOR EACH elevator IN listOfElevators
+					newListOfElevators.APPEND({elevator: elevator, diff: ABS(floorRequest - elevator.currentFloor)})
+				ENDFOR
+				'sort the list by the list and select the first elevator then the closer'
+				newListOfElevators.SORT() BY diff
+				RETURN newListOfElevators[0]
+			ENDSEQUENCE
+			
+			'[OK]function that return the best elevator 							(call by theyAreIdle AND theyAreOnWay)
+			SEQUENCE elevatorReturn USING listOfElevators AND floorRequest RETURN elevator OR FALSE
+				IF listOfElevators.lenght = 0 THEN
+					RETURN FALSE
+				ELSE IF listOfElevators.lenght = 1 THEN
+					RETURN listOfElevators[0]
+				ELSE 
+					RETURN CALL isCloser WITH listOfElevators AND floorRequest RETURNING elevator
+				ENDIF
+			ENDSEQUENCE
+			
+			'[OK]function that return the best elevator on same way					(call by choiceElevator)
+			SEQUENCE therAreOnWay USING floorRequest AND direction
+				INIT listOfElevators = []
+				FOR EACH elevator IN column.elevators
+					'implement a list of elevator on same way (direction and did not go beyond the floorRequest)'
+					IF elevator.status = direction THEN
+						IF (direction = "goUp" AND elevator.currentFloor < floorRequest) OR (direction = "goDown" AND elevator.currentFloor > floorRequest) THEN
+							listOfElevators.APPEND(elevator)
+						ENDIF
+					ENDIF
+				ENDFOR
+				RETURN CALL elevatorReturn WITH listOfElevators AND floorRequest RETURNING elevator OR FALSE
+			ENDSEQUENCE
+
+			'[OK]function that return the best elevator idle 						(call by choiceElevator)'
+			SEQUENCE theyAreIdle USING column AND floorRequest RETURN elevator
+				INIT listOfElevators = []
+				FOR EACH elevator IN column.elevators
+				'implement a list of elevator idle'
+					IF elevator.status = "idle" THEN
+						listOfElevators.APPEND(elevator)
+					ENDIF
+				RETURN CALL elevatorReturn WITH listOfElevators AND floorRequest
+			ENDSEQUENCE
+
+			'[OK]function that return the best elevator on opposite way				(call by choiceElevator)
+			SEQUENCE therAreNotOnWay USING floorRequest AND direction
+				INIT listOfElevators = []
+				FOR EACH elevator IN column.elevators
+				'implement a list of elevator on opposite way (direction and did not go beyond the floorRequest)'
+					IF elevator.status != direction THEN 'AND elevator.status != "idle" 
+						listOfElevators.APPEND(elevator)
+					ENDIF
+				ENDFOR
+				RETURN CALL elevatorReturn WITH listOfElevators AND floorRequest RETURNING elevator OR FALSE
+			ENDSEQUENCE
+
+			'[OK]main function for choose the best elevator' 						(call by PROGRAM)
+			SEQUENCE choiceElevator USING floorRequest AND direction RETURN elevator
+				CALL therAreOnWay WITH floorRequest AND direction RETURNING elevator or FALSE
+				IF elevator THEN
+					RETURN elevator
+				ENDIF
+				CALL theyAreIdle WITH floorRequest AND direction RETURNING elevator or FALSE
+				IF elevator THEN
+					RETURN elevator
+				ENDIF
+				RETURN CALL therAreNotOnWay WITH floorRequest AND direction RETURNING elevator
+			ENDSEQUENCE
+		ENDMETHODS
+	ENDDEFINE
+
+	DEFINE Elevator USING id AND floors				'column is a object that's manage it's
+		SEQUENCE --- INITILIZATION ---							'initialization of variable and objects'
+			INIT ID = id
+			INIT status				: "idle"					'idle AND goUp AND goDown'
+			INIT currentFloor		: 1							'integer of the current floor'
+			INIT listRequest		: []						'list of request'
+			INIT callElevatorButtons: []						'list of buttons inside the elevator'
+
+			CALL createrCallElevatorButtons WITH floors
+
+			'[OK]function for create as many buttons as floor served'
+			SEQUENCE createrCallElevatorButtons USING floors
+				'create button inside de elevator for each floor'
+				FOR EACH floor IN range(1, floors)
+					callElevatorButtons.APPEND({floorOfButton: floor, pressed : FALSE})
+				ENDFOR
+			ENDSEQUENCE
+		ENDSEQUENCE
+
+		METHODS
+			'[OK] function for open the door'										(call by doRequest)
+			SEQUENCE openDoor
+				ACTION() >> Open Door
+				ACTION() >> Wait 8 seconds
+				CALL closeDoor()
+			ENDSEQUENCE
+
+			'[OK] function for close the door'										(call by openDoor)
+			SEQUENCE closeDoor
+				WHILE self.doorPath is blocked DO
+					ACTION() >> Wait 3 seconds
+				ENDWHILE
+				ACTION() >> Close Door
+			ENDSEQUENCE
+
+			'[OK] function for to move the elevtor'									(call by PROGRAM)
+			SEQUENCE doRequest USING elevator AND floor
+				FOR EACH request IN elevator.listRequest
+					'if the elevator is on the floor request then open else move to the floor requested'
+					IF elevator.currentFloor != floor THEN
+						ACTION() >> elevator move to floor
+					ENDIF
+					elevator.openDoor()
+					'remove the request on the list'
+					elevator.listRequest[0].REMOVE()
+				ENDFOR
+			ENDSEQUENCE
+		ENDMETHODS
+	ENDDEFINE
+
+---------------------------------------------------------- ENDDEFINE CLASS ---------------------------------------------------------------
+
+============================================================ TESTING SECTION =============================================================
+
+INIT controller1 TO INSTANTIATE OF Column WITH (10, 2)
+
+'Scenario 1'
+	SET status OF ELEVATOR 1 TO "idle"
+	SET currentFloor OF ELEVATOR 1 TO 2
+	SET status OF ELEVATOR 2 TO "idle"
+	SET currentFloor OF ELEVATOR 2 TO 6
+
+	2 UP 7
+	SET column.callFloorButtonsUp.floorOfButton[2].pressed TO TRUE
+	SET elevator.callElevatorButtons.floorOfButton[7].pressed TO TRUE
+
+'Scenario 2'
+	SET status OF ELEVATOR 1 TO "idle"
+	SET currentFloor OF ELEVATOR 1 TO 10
+	SET status OF ELEVATOR 2 TO "idle"
+	SET currentFloor OF ELEVATOR 2 TO 3
+	
+	1 UP 6
+	SET column.callFloorButtonsUp.floorOfButton[1].pressed TO TRUE
+	SET elevator.callElevatorButtons.floorOfButton[6].pressed TO TRUE
+
+	3 UP 5
+	SET column.callFloorButtonsUp.floorOfButton[3].pressed TO TRUE
+	SET elevator.callElevatorButtons.floorOfButton[5].pressed TO TRUE
+
+	9 DOWN 2
+	SET column.callFloorButtonsUp.floorOfButton[9].pressed TO TRUE
+	SET elevator.callElevatorButtons.floorOfButton[2].pressed TO TRUE
+
+
+'Scenario 3'
+	SET status OF ELEVATOR 1 TO "idle"
+	SET currentFloor OF ELEVATOR 1 TO 10
+	SET status OF ELEVATOR 2 TO "goDown" 3 to 6
+	SET currentFloor OF ELEVATOR 2 TO 3
+	
+	3 DOWN 2
+	SET column.callFloorButtonsUp.floorOfButton[3].pressed TO TRUE
+	SET elevator.callElevatorButtons.floorOfButton[2].pressed TO TRUE
+
+	10 DOWN 3 "Down"
+	SET column.callFloorButtonsUp.floorOfButton[10].pressed TO TRUE
+	SET elevator.callElevatorButtons.floorOfButton[3].pressed TO TRUE
+
+========================================================== END TESTING SECTION ===========================================================
+
+
+
+
