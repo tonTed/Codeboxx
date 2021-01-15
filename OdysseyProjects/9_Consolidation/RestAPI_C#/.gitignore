@@ -1,0 +1,7 @@
+database.yml
+/publish/*
+/bin/Debug/*
+/bin/Release/*
+/obj/Debug/*
+/obj/Release/*
+/obj/*

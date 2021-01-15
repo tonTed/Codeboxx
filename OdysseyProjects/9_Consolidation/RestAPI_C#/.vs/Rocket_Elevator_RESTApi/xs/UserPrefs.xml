@@ -1,0 +1,29 @@
+﻿<Properties StartupConfiguration="{E6A61E19-8D54-4840-98E6-99D4AAA22CDE}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Controllers/BatteriesController.cs">
+    <Files>
+      <File FileName="Controllers/BatteriesController.cs" Line="1" Column="1" />
+      <File FileName="Controllers/InterventionsController.cs" />
+      <File FileName="Startup.cs" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="Rocket_Elevator_RESTApi" expanded="True">
+            <Node name="Rocket_Elevator_RESTApi" expanded="True">
+              <Node name="Controllers" expanded="True">
+                <Node name="BatteriesController.cs" selected="True" />
+              </Node>
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.Rocket__Elevator__RESTApi PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MultiItemStartupConfigurations />
+</Properties>

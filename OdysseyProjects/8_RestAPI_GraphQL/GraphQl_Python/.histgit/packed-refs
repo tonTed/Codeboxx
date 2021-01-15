@@ -1,0 +1,7 @@
+# pack-refs with: peeled fully-peeled sorted 
+75817276f11763f28067e98d22bc62cbbb23f2e1 refs/remotes/origin/Cindy
+c81441bc06af05fdd3cfde7b4d75da21697cc3a6 refs/remotes/origin/Cindy2
+c41c751a52fcc5cb9fe39855542da3c469977566 refs/remotes/origin/cindy
+39e14b0452d20941a8f8cb9d44ef3948395f7d46 refs/remotes/origin/main
+eb639ffba57b1d131b41e1dc54231a80eff179c1 refs/remotes/origin/master
+5c4b9be0ca45a1bd38f3e87dd728cb806dadfb6f refs/remotes/origin/ted

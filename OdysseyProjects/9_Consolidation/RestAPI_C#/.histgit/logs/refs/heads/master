@@ -1,0 +1,19 @@
+0000000000000000000000000000000000000000 6fbecbab5abdbc5e6b9a230a6c08060f73db5c41 tonTed <yddetco@gmail.com> 1605711318 -0500	clone: from https://github.com/tonTed/RE_Cons_RESTApi.git
+6fbecbab5abdbc5e6b9a230a6c08060f73db5c41 2dda28ba5038e13b9100cc86b462d11e653e54f5 tonTed <yddetco@gmail.com> 1605728909 -0500	commit: seeting local db
+2dda28ba5038e13b9100cc86b462d11e653e54f5 6b35b2ead9ed5db57a1df22e6cc0f94af87ff728 tonTed <yddetco@gmail.com> 1605736393 -0500	commit: grrrrr
+6b35b2ead9ed5db57a1df22e6cc0f94af87ff728 cfa0e5879b937e95b5cd1adefe1ccc68053527c7 tonTed <yddetco@gmail.com> 1605795222 -0500	commit: get interventions works
+cfa0e5879b937e95b5cd1adefe1ccc68053527c7 0918613349b2c8c5d979be94a0f231f2414b0a5c tonTed <yddetco@gmail.com> 1605821598 -0500	commit: ok without routes
+0918613349b2c8c5d979be94a0f231f2414b0a5c 70df8c3eba4085640cd3dae2122014c663adc182 tonTed <yddetco@gmail.com> 1605825469 -0500	commit: routes works
+70df8c3eba4085640cd3dae2122014c663adc182 0dfcc57f611c2d73df5f9906a0738e543cf4bf04 tonTed <yddetco@gmail.com> 1605827067 -0500	commit: ?
+0dfcc57f611c2d73df5f9906a0738e543cf4bf04 5d16b471588a532458b8499f9083024e2b7b87c1 tonTed <yddetco@gmail.com> 1605827083 -0500	commit: ?
+5d16b471588a532458b8499f9083024e2b7b87c1 63a12f43a444086dcc12e01e2dd9a88bcc9aac2f tonTed <yddetco@gmail.com> 1605829233 -0500	commit: cached
+63a12f43a444086dcc12e01e2dd9a88bcc9aac2f f78a21693b0994b27dad2e6a94a4c488193d1c64 tonTed <yddetco@gmail.com> 1605829300 -0500	commit: cached
+f78a21693b0994b27dad2e6a94a4c488193d1c64 d39997ab5a050b4663a4f4426952d4c9c8d1439b tonTed <yddetco@gmail.com> 1605830236 -0500	commit: cached
+d39997ab5a050b4663a4f4426952d4c9c8d1439b 0c31de81b6cb2582d9c591a8c37b4c5ff13ad924 tonTed <yddetco@gmail.com> 1605830267 -0500	commit: cached
+0c31de81b6cb2582d9c591a8c37b4c5ff13ad924 b237bef79f5b7d5b047a5fa4741d1a206a68f9d0 tonTed <yddetco@gmail.com> 1605837914 -0500	commit: employee can be null
+b237bef79f5b7d5b047a5fa4741d1a206a68f9d0 2f6574c0fed6b04fc85771000658647dfbf1c38d tonTed <yddetco@gmail.com> 1607986914 -0500	commit: before w13
+2f6574c0fed6b04fc85771000658647dfbf1c38d 94468dfda8e62b33312d972343ced13f9bbde943 tonTed <yddetco@gmail.com> 1607989162 -0500	commit: something works share with julien
+94468dfda8e62b33312d972343ced13f9bbde943 f93a9a51b46b5be2b398cfc77f774e26426e849a tonTed <yddetco@gmail.com> 1607990102 -0500	commit: comment for work
+f93a9a51b46b5be2b398cfc77f774e26426e849a c9495244dcc33ccce4e58aee8bdf1b08208c7af7 tonTed <yddetco@gmail.com> 1607990662 -0500	merge ted: Fast-forward
+c9495244dcc33ccce4e58aee8bdf1b08208c7af7 4f91f52bc029317a7d7b4ef70885d82793b35026 tonTed <yddetco@gmail.com> 1608048234 -0500	merge julien: Fast-forward
+4f91f52bc029317a7d7b4ef70885d82793b35026 3748ffb692ed84eae587d9da315761d0fd12bd26 tonTed <yddetco@gmail.com> 1608048346 -0500	commit: deploy

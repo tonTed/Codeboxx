@@ -1,0 +1,7 @@
+0000000000000000000000000000000000000000 9b65e352aa478217408fe99aaf06bb25b00b32fb tonTed <yddetco@gmail.com> 1605244767 -0500	commit (initial): before sqlc generate
+9b65e352aa478217408fe99aaf06bb25b00b32fb a5e1d210cc221031f7782e47f25121d2534ced56 tonTed <yddetco@gmail.com> 1605247299 -0500	commit: before go run gqlgen:
+a5e1d210cc221031f7782e47f25121d2534ced56 c749f7ce3e214f801e4fb6aac8616bbcc8a7b936 tonTed <yddetco@gmail.com> 1605302134 -0500	commit: links works before postgres
+c749f7ce3e214f801e4fb6aac8616bbcc8a7b936 f698c406c8dc408d5e115c2a8cb7d414629a766b tonTed <yddetco@gmail.com> 1605316316 -0500	commit: gooooo
+f698c406c8dc408d5e115c2a8cb7d414629a766b 3c94ee1b30d0690d001a464fa0c7db8ce2c16bf7 tonTed <yddetco@gmail.com> 1605400178 -0500	commit: test colors
+3c94ee1b30d0690d001a464fa0c7db8ce2c16bf7 5698ef8c57c90430913395708965c4adff883f66 tonTed <yddetco@gmail.com> 1605499388 -0500	commit: connect to two databases
+5698ef8c57c90430913395708965c4adff883f66 9e03f6ee15a5bce4af3156f7a240b8e371c6e801 tonted <yddetco@gmail.com> 1610658045 -0500	commit: ?

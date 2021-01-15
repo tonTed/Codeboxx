@@ -1,0 +1,20 @@
+
+type Employees {
+  id: ID!
+  first_name: String!
+  last_name: String!
+  fact_interventions: [FactIntervention!]! 
+}
+
+type FactIntervention {
+  id: ID!
+  employee: Employees!
+  building_id: Int!
+  result: String!
+  status: String!
+}
+
+type Query {
+  interventions: [FactIntervention!]!
+  employees: [Employees!]!
+}
